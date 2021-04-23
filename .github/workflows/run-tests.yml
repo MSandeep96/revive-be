@@ -24,7 +24,7 @@ jobs:
 
       - run: npm ci
       - run: npm run build
-      - run: npm run test
+      - run: npm run test:cov
         env:
           MONGO_CONNECTION_STRING: ${{secrets.MONGO_CONNECTION_STRING}}
           GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}} 
