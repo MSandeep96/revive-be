@@ -2,7 +2,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { LoggerModule } from 'nestjs-pino';
-import { UserService } from 'src/user/user.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { IApiGoogleLoginResponse } from './interfaces/types';
@@ -16,7 +15,6 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        UserService,
         {
           provide: getModelToken('User'),
           useValue: {},
@@ -56,6 +54,20 @@ describe('AuthController', () => {
       const retVal = await authController.googleAuthRedirect(request);
       expect(spy).toHaveBeenCalledWith(request.user.email);
       expect(retVal).toEqual(mockResp);
+    });
+  });
+
+  describe('login', () => {
+    it('should be defined', () => {
+      expect(authController.login).toBeDefined();
+      expect(authController.login()).toBeUndefined();
+    });
+  });
+
+  describe('googleAuth', () => {
+    it('should be defined', () => {
+      expect(authController.googleAuth).toBeDefined();
+      expect(authController.googleAuth()).toBeUndefined();
     });
   });
 });

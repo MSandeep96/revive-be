@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/mongoose';
 import { AuthGuard, PassportStrategy } from '@nestjs/passport';
+import { Model } from 'mongoose';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserService } from 'src/user/user.service';
+import { User, UserDocument } from 'src/user/schemas/user.schema';
 
 interface JwtContent {
   user_id: string;
@@ -12,7 +14,7 @@ interface JwtContent {
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private configService: ConfigService,
-    private userService: UserService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -22,7 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtContent) {
-    return await this.userService.getUserByJwt(payload);
+    return await this.userModel.findById(payload.user_id).exec();
   }
 }
 

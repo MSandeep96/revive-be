@@ -1,40 +1,39 @@
 import { ConfigModule } from '@nestjs/config';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
+import { Model } from 'mongoose';
 import { UserDocument } from 'src/user/schemas/user.schema';
-import { UserService } from 'src/user/user.service';
 import { JwtStrategy } from './jwt.strategy';
 
 describe('jwt strategy', () => {
   let jwtStrategy: JwtStrategy;
-  let userService: UserService;
+  let model: Model<UserDocument>;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({})],
       providers: [
-        UserService,
         JwtStrategy,
         {
           provide: getModelToken('User'),
-          useValue: {},
+          useValue: {
+            findById: jest.fn(),
+          },
         },
       ],
     }).compile();
-    userService = moduleRef.get<UserService>(UserService);
     jwtStrategy = moduleRef.get<JwtStrategy>(JwtStrategy);
+    model = moduleRef.get<Model<UserDocument>>(getModelToken('User'));
   });
 
   it('should return user', async () => {
     const payload = { user_id: 'sum_id' };
     const user: UserDocument = { username: 'sumthang' } as UserDocument;
-    const spy = jest
-      .spyOn(userService, 'getUserByJwt')
-      .mockImplementation(() => {
-        return Promise.resolve(user);
-      });
+    const spy = jest.spyOn(model, 'findById').mockReturnValue({
+      exec: jest.fn().mockResolvedValue(user),
+    } as any);
     const userRet = await jwtStrategy.validate(payload);
-    expect(spy).toHaveBeenCalledWith(payload);
+    expect(spy).toHaveBeenCalledWith(payload.user_id);
     expect(user).toEqual(userRet);
   });
 });

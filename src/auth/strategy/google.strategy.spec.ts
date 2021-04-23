@@ -3,7 +3,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { LoggerModule } from 'nestjs-pino';
-import { UserService } from 'src/user/user.service';
 import { AuthService } from '../auth.service';
 import { GoogleStrategy } from './google.strategy';
 
@@ -21,7 +20,6 @@ describe('google strategy', () => {
       ],
       providers: [
         AuthService,
-        UserService,
         {
           provide: getModelToken('User'),
           useValue: {},
@@ -40,6 +38,13 @@ describe('google strategy', () => {
 
   it('throws error if profile has no emails', () => {
     const invalidProfile = { emails: [] };
+    expect(() =>
+      googleStrategy.validate('gibber', 'gabber', invalidProfile),
+    ).toThrowError();
+  });
+
+  it('throws error if profile has no email value', () => {
+    const invalidProfile = { emails: [{}] };
     expect(() =>
       googleStrategy.validate('gibber', 'gabber', invalidProfile),
     ).toThrowError();

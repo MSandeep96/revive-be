@@ -35,13 +35,13 @@ describe('UsersController', () => {
       const user = { username: 'sumusername' };
       const req = {
         user: {
-          getObject: jest.fn().mockReturnValue(user),
+          toObject: jest.fn().mockReturnValue(user),
         },
       };
       const userRet = controller.getProfile(
         (req as unknown) as IRequestGetProfile,
       );
-      expect(req.user.getObject).toBeCalled();
+      expect(req.user.toObject).toBeCalled();
       expect(userRet).toEqual(user);
     });
   });

@@ -11,6 +11,6 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get()
   getProfile(@Req() req: IRequestGetProfile): User {
-    return req.user.getObject();
+    return req.user.toObject();
   }
 }
