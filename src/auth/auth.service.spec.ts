@@ -2,7 +2,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
-import { UserDocument } from 'src/user/schemas/user.schema';
+import { UserDocument } from '../user/schemas/user.schema';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {

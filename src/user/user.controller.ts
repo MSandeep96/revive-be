@@ -1,5 +1,5 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/strategy/jwt.strategy';
+import { JwtAuthGuard } from '../auth/strategy/jwt.strategy';
 import { IRequestGetProfile } from './interfaces/controller.interface';
 import { User } from './schemas/user.schema';
 import { UserService } from './user.service';

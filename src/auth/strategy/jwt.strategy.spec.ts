@@ -2,7 +2,7 @@ import { ConfigModule } from '@nestjs/config';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test } from '@nestjs/testing';
 import { Model } from 'mongoose';
-import { UserDocument } from 'src/user/schemas/user.schema';
+import { UserDocument } from '../../user/schemas/user.schema';
 import { JwtStrategy } from './jwt.strategy';
 
 describe('jwt strategy', () => {
