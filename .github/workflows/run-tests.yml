@@ -14,6 +14,14 @@ jobs:
     strategy:
       matrix:
         node-version: [10.x, 12.x, 14.x, 16.x]
+    env:
+      MONGO_CONNECTION_STRING: ${{secrets.MONGO_CONNECTION_STRING}}
+      GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}} 
+      GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
+      GOOGLE_AUTH_CALLBACK_URL: ${{secrets.GOOGLE_AUTH_CALLBACK_URL}}
+      JWT_SECRET: ${{secrets.JWT_SECRET}}
+      ACCESS_TOKEN_DURATION: ${{secrets.ACCESS_TOKEN_DURATION}}
+      REFRESH_TOKEN_DURATION: ${{secrets.REFRESH_TOKEN_DURATION}}
     steps:
       - uses: actions/checkout@v2
       
@@ -25,12 +33,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test:cov
-        env:
-          MONGO_CONNECTION_STRING: ${{secrets.MONGO_CONNECTION_STRING}}
-          GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}} 
-          GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
-          GOOGLE_AUTH_CALLBACK_URL: ${{secrets.GOOGLE_AUTH_CALLBACK_URL}}
-          JWT_SECRET: ${{secrets.JWT_SECRET}}
+      - run: npm run test:e2e
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v2.7.5
         env:

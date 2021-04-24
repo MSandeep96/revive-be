@@ -6,26 +6,38 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 
+const envFilePath = () => {
+  switch (process.env.NODE_ENV) {
+    case 'production':
+      return '.production.env';
+    case 'test':
+      return '.test.env';
+    default:
+      return '.env';
+  }
+};
+
+const loggerConfig = () => {
+  if (process.env.NODE_ENV === 'production') return {};
+  return {
+    pinoHttp: {
+      level: 'debug',
+      prettyPrint: {
+        levelFirst: true,
+        translateTime: 'UTC:mm/dd/yyyy h:MM:ss TT Z',
+      },
+    },
+  };
+};
+
 @Module({
   imports: [
     UserModule,
     AuthModule,
-    LoggerModule.forRoot({
-      pinoHttp:
-        process.env.NODE_ENV === 'production'
-          ? {}
-          : {
-              level: 'debug',
-              prettyPrint: {
-                levelFirst: true,
-                translateTime: 'UTC:mm/dd/yyyy h:MM:ss TT Z',
-              },
-            },
-    }),
+    LoggerModule.forRoot(loggerConfig()),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'production' ? 'production.env' : '.env',
+      envFilePath: envFilePath(),
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
