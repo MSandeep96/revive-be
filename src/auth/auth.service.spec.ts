@@ -1,3 +1,4 @@
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -9,6 +10,7 @@ describe('AuthService', () => {
   let authService: AuthService;
   let jwtService: JwtService;
   let model: Model<UserDocument>;
+  let configService: ConfigService;
   const mockUser = { _id: 'madeUpId', toObject: jest.fn() };
 
   beforeEach(async () => {
@@ -29,11 +31,15 @@ describe('AuthService', () => {
         JwtModule.register({
           secret: 'madeUpSecret',
         }),
+        ConfigModule.forRoot({
+          envFilePath: '.test.env',
+        }),
       ],
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
     jwtService = module.get<JwtService>(JwtService);
+    configService = module.get<ConfigService>(ConfigService);
     model = module.get<Model<UserDocument>>(getModelToken('User'));
   });
 
@@ -65,8 +71,13 @@ describe('AuthService', () => {
       const spyCreateUser = jest
         .spyOn(model, 'create')
         .mockReturnValueOnce(mockUser as any);
+      const spyGenerateAccessToken = jest.spyOn(
+        authService,
+        'generateAccessToken',
+      );
       const email = 'sumemail@mail.com';
       const userRet = await authService.loginGoogle(email);
+      expect(spyGenerateAccessToken).toHaveBeenCalledTimes(2);
       expect(spyUserByEmail).toHaveBeenCalledWith({ email });
       expect(spyCreateUser).toHaveBeenCalledWith({ email });
       expect(mockUser.toObject).toHaveBeenCalled();
@@ -77,27 +88,25 @@ describe('AuthService', () => {
 
   describe('generateAccessToken', () => {
     it('should return access_token', () => {
+      const spy = jest.spyOn(configService, 'get').mockReturnValue('5h');
       const access_token = authService.generateAccessToken(mockUser._id);
+      expect(spy).toHaveBeenCalledWith('ACCESS_TOKEN_DURATION');
       expect(access_token).toBeDefined();
+      expect(jwtService.decode(access_token)).toHaveProperty(
+        'user_id',
+        mockUser._id,
+      );
     });
 
-    it('should return access_token when decoded contains user_id', () => {
-      const access_token = authService.generateAccessToken(mockUser._id);
-      const decodedAccessToken = jwtService.decode(access_token);
-      expect(decodedAccessToken).toHaveProperty('user_id', mockUser._id);
-    });
-  });
-
-  describe('generateRefreshToken', () => {
     it('should return refresh_token', () => {
-      const refresh_token = authService.generateRefreshToken(mockUser._id);
+      const spy = jest.spyOn(configService, 'get').mockReturnValue('5h');
+      const refresh_token = authService.generateAccessToken(mockUser._id, true);
+      expect(spy).toHaveBeenCalledWith('REFRESH_TOKEN_DURATION');
       expect(refresh_token).toBeDefined();
-    });
-
-    it('should return access_token when decoded contains user_id', () => {
-      const refresh_token = authService.generateRefreshToken(mockUser._id);
-      const decodedRefreshToken = jwtService.decode(refresh_token);
-      expect(decodedRefreshToken).toHaveProperty('user_id', mockUser._id);
+      expect(jwtService.decode(refresh_token)).toHaveProperty(
+        'user_id',
+        mockUser._id,
+      );
     });
   });
 });

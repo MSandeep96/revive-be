@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -23,6 +24,9 @@ describe('AuthController', () => {
       imports: [
         JwtModule.register({
           secret: 'madeUpSecret',
+        }),
+        ConfigModule.forRoot({
+          envFilePath: '.test.env',
         }),
         LoggerModule.forRoot(),
       ],

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   // async loginPhone(phone: string, password: string) {}
@@ -19,7 +21,7 @@ export class AuthService {
       user = await this.userModel.create({ email });
     }
     const access_token = this.generateAccessToken(user._id);
-    const refresh_token = this.generateRefreshToken(user._id);
+    const refresh_token = this.generateAccessToken(user._id, true);
     const userResp: IApiGoogleLoginResponse = {
       ...user.toObject(),
       access_token,
@@ -28,13 +30,11 @@ export class AuthService {
     return userResp;
   }
 
-  generateAccessToken(_id: string): string {
+  generateAccessToken(_id: string, is_refresh = false): string {
     const payload: JwtContent = { user_id: _id };
-    return this.jwtService.sign(payload, { expiresIn: '6h' });
-  }
-
-  generateRefreshToken(_id: string): string {
-    const payload: JwtContent = { user_id: _id };
-    return this.jwtService.sign(payload, { expiresIn: '10d' });
+    const expiresIn = is_refresh
+      ? this.configService.get('REFRESH_TOKEN_DURATION')
+      : this.configService.get('ACCESS_TOKEN_DURATION');
+    return this.jwtService.sign(payload, { expiresIn });
   }
 }

@@ -29,6 +29,13 @@ describe('google strategy', () => {
     }).compile();
     googleStrategy = moduleRef.get<GoogleStrategy>(GoogleStrategy);
   });
+
+  it('throws error if profile is undefined', () => {
+    expect(() =>
+      googleStrategy.validate('gibber', 'gabber', undefined),
+    ).toThrowError();
+  });
+
   it('throws error if profile is undefined', () => {
     const invalidProfile = {};
     expect(() =>
@@ -38,13 +45,6 @@ describe('google strategy', () => {
 
   it('throws error if profile has no emails', () => {
     const invalidProfile = { emails: [] };
-    expect(() =>
-      googleStrategy.validate('gibber', 'gabber', invalidProfile),
-    ).toThrowError();
-  });
-
-  it('throws error if profile has no email value', () => {
-    const invalidProfile = { emails: [{}] };
     expect(() =>
       googleStrategy.validate('gibber', 'gabber', invalidProfile),
     ).toThrowError();
