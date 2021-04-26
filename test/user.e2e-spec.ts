@@ -24,13 +24,14 @@ describe('UserController (e2e)', () => {
   });
 
   afterAll(async () => {
+    await userModel.deleteMany({}).exec();
     await app.close();
   });
 
   describe('/user (GET)', () => {
     let user: UserDocument;
     beforeEach(async () => {
-      userModel.deleteMany({});
+      await userModel.deleteMany({}).exec();
       user = await userModel.create({ email: 'randomEmail@mail.com' });
     });
 

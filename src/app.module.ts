@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
+import { GameModule } from './game/game.module';
 import { UserModule } from './user/user.module';
 
 const envFilePath = () => {
@@ -19,6 +20,12 @@ const envFilePath = () => {
 
 const loggerConfig = () => {
   if (process.env.NODE_ENV === 'production') return {};
+  if (process.env.NODE_ENV === 'test')
+    return {
+      pinoHttp: {
+        level: 'error',
+      },
+    };
   return {
     pinoHttp: {
       level: 'debug',
@@ -46,6 +53,7 @@ const loggerConfig = () => {
       }),
       inject: [ConfigService],
     }),
+    GameModule,
   ],
   controllers: [AppController],
 })
