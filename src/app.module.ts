@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
+import { configValidationSchema } from './config';
 import { GameModule } from './game/game.module';
 import { UserModule } from './user/user.module';
 
@@ -45,6 +46,7 @@ const loggerConfig = () => {
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: envFilePath(),
+      validationSchema: configValidationSchema,
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
