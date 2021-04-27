@@ -1,6 +1,7 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import axios from 'axios';
+import { LoggerModule } from 'nestjs-pino';
 import { Platform } from '../../game/interface/game.interface';
 import { RawgService } from './rawg.service';
 
@@ -17,6 +18,7 @@ describe('IGDB service', () => {
         ConfigModule.forRoot({
           ignoreEnvFile: true,
         }),
+        LoggerModule.forRoot(),
       ],
       providers: [RawgService],
     }).compile();

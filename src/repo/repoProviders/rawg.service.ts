@@ -61,7 +61,6 @@ export class RawgService implements RepoProvider {
     return {
       key: this.configService.get('RAWG_API_KEY'),
       search: name,
-      ordering: 'rating',
       platforms,
     };
   }

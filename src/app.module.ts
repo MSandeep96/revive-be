@@ -20,12 +20,12 @@ const envFilePath = () => {
 
 const loggerConfig = () => {
   if (process.env.NODE_ENV === 'production') return {};
-  if (process.env.NODE_ENV === 'test')
-    return {
-      pinoHttp: {
-        level: 'error',
-      },
-    };
+  // if (process.env.NODE_ENV === 'test')
+  //   return {
+  //     pinoHttp: {
+  //       level: 'info',
+  //     },
+  //   };
   return {
     pinoHttp: {
       level: 'debug',

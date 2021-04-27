@@ -10,7 +10,6 @@ export class GameController {
 
   @Get('search')
   async search(@Query() searchQuery: GameSearchQuery, @Res() res: Response) {
-    console.log(searchQuery + 'here');
     const games = await this.gameService.searchDatabase(
       searchQuery.name,
       searchQuery.platforms,

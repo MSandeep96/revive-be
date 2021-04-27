@@ -1,5 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { LoggerModule } from 'nestjs-pino';
 import { Platform } from '../game/interface/game.interface';
 import { RepoGameResponse } from './interface/repo.interface';
 import { RepoService } from './repo.service';
@@ -35,6 +36,7 @@ describe('RepoService', () => {
         ConfigModule.forRoot({
           ignoreEnvFile: true,
         }),
+        LoggerModule.forRoot(),
       ],
     }).compile();
 

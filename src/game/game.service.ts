@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { RepoService } from '../repo/repo.service';
 import { OnRepoFirstReturnFn, Platform } from './interface/game.interface';
 import { Game, GameDocument } from './schemas/game.schema';
@@ -10,6 +11,7 @@ export class GameService {
   constructor(
     @InjectModel(Game.name) private gameModel: Model<GameDocument>,
     private repoService: RepoService,
+    @InjectPinoLogger(GameService.name) private logger: PinoLogger,
   ) {
     repoService.init();
   }
@@ -31,14 +33,16 @@ export class GameService {
       onRepoFirstReturnFn,
     );
     const upsertGames = games.map((game) => {
-      return this.gameModel.updateOne(
-        { slug: game.slug, platform: game.platform },
-        game,
-        {
+      return this.gameModel
+        .updateOne({ slug: game.slug, platform: game.platform }, game, {
           upsert: true,
-        },
-      );
+        })
+        .exec();
     });
-    await Promise.all(upsertGames);
+    try {
+      await Promise.all(upsertGames);
+    } catch (err) {
+      this.logger.error(err, 'Error writing games to database');
+    }
   }
 }

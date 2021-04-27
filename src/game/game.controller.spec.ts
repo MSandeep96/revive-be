@@ -56,8 +56,7 @@ describe('GameController', () => {
         status: jest.fn().mockReturnValue(sendObj),
       };
       await controller.search(
-        'name',
-        [Platform.PS4],
+        { name: 'name', platforms: [Platform.PS4] },
         (res as unknown) as Response,
       );
       expect(res.status).toHaveBeenCalledWith(200);
@@ -81,8 +80,7 @@ describe('GameController', () => {
         status: jest.fn().mockReturnValue(sendObj),
       };
       await controller.search(
-        'name',
-        [Platform.PS4],
+        { name: 'name', platforms: [Platform.PS4] },
         (res as unknown) as Response,
       );
       expect(res.status).toHaveBeenCalledWith(200);

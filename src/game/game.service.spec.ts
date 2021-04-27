@@ -1,6 +1,7 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
+import { LoggerModule } from 'nestjs-pino';
 import { RepoService } from '../repo/repo.service';
 import { GameService } from './game.service';
 import { Platform } from './interface/game.interface';
@@ -30,6 +31,7 @@ describe('GameService', () => {
           },
         },
       ],
+      imports: [LoggerModule.forRoot()],
     }).compile();
 
     service = module.get<GameService>(GameService);
@@ -75,7 +77,11 @@ describe('GameService', () => {
       const spy = jest
         .spyOn(repoService, 'search')
         .mockResolvedValueOnce(returnValue);
-      const spyModel = jest.spyOn(gameModel, 'updateOne');
+      const spyModel = jest
+        .spyOn(gameModel, 'updateOne')
+        .mockImplementation(() => {
+          return { exec: jest.fn() } as any;
+        });
       const mockFn = jest.fn();
       await service.searchRepos('name', [Platform.PS4, Platform.PS5], mockFn);
       expect(spy).toHaveBeenCalledWith(

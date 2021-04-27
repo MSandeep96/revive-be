@@ -7,7 +7,8 @@ export class GameSearchQuery {
   name: string;
 
   @Transform(({ value }) => {
-    value.split(',');
+    if (Array.isArray(value)) return value;
+    return value.split(',');
   })
   @IsArray()
   @ArrayUnique()
