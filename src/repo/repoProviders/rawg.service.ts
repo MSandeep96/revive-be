@@ -62,6 +62,7 @@ export class RawgService implements RepoProvider {
       key: this.configService.get('RAWG_API_KEY'),
       search: name,
       platforms,
+      search_precise: true,
     };
   }
 }

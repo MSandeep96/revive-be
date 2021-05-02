@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { configValidationSchema } from './config';
 import { GameModule } from './game/game.module';
+import { ListingModule } from './listing/listing.module';
 import { UserModule } from './user/user.module';
 
 const envFilePath = () => {
@@ -56,6 +57,7 @@ const loggerConfig = () => {
       inject: [ConfigService],
     }),
     GameModule,
+    ListingModule,
   ],
   controllers: [AppController],
 })
