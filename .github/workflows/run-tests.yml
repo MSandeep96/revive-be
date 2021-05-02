@@ -22,6 +22,10 @@ jobs:
       JWT_SECRET: ${{secrets.JWT_SECRET}}
       ACCESS_TOKEN_DURATION: ${{secrets.ACCESS_TOKEN_DURATION}}
       REFRESH_TOKEN_DURATION: ${{secrets.REFRESH_TOKEN_DURATION}}
+      TWITCH_CLIENT_ID: ${{secrets.TWITCH_CLIENT_ID}}
+      TWITCH_CLIENT_SECRET: ${{secrets.TWITCH_CLIENT_SECRET}}
+      TWITCH_ACCESS_TOKEN: ${{secrets.TWITCH_ACCESS_TOKEN}}
+      RAWG_API_KEY: ${{secrets.RAWG_API_KEY}}
     steps:
       - uses: actions/checkout@v2
       
