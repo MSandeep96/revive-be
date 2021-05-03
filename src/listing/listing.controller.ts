@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -23,7 +24,7 @@ export class ListingController {
 
   @Put()
   @UseGuards(JwtAuthGuard)
-  async create(@Req() req, listingDto: CreateListingDto) {
+  async create(@Req() req, @Body() listingDto: CreateListingDto) {
     return await this.listingService.createListing(listingDto, req.user);
   }
 
@@ -34,14 +35,14 @@ export class ListingController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async updateListing(updateListingDto: UpdateListingDto) {
-    await this.listingService.updateListing(updateListingDto);
+  async updateListing(@Req() req, @Body() updateListingDto: UpdateListingDto) {
+    await this.listingService.updateListing(req.user, updateListingDto);
     return;
   }
 
   @Delete()
   @UseGuards(JwtAuthGuard)
-  async deleteListing(@Query() deleteListingDto: DeleteListingDto) {
-    this.listingService.deleteListing(deleteListingDto);
+  async deleteListing(@Req() req, @Query() deleteListingDto: DeleteListingDto) {
+    this.listingService.deleteListing(req.user, deleteListingDto);
   }
 }

@@ -1,5 +1,5 @@
 import { UserDocument } from '../schemas/user.schema';
 
-export interface IRequestGetProfile extends Express.Request {
+export interface IRequestWithProfile extends Express.Request {
   user: UserDocument;
 }

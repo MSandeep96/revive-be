@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsIn,
@@ -5,7 +6,6 @@ import {
   IsLongitude,
   IsNumber,
   IsString,
-  IsUUID,
   Max,
   Min,
   ValidateNested,
@@ -44,8 +44,10 @@ export class CreateListingDto extends ListingDetailsDto {
 }
 
 export class UpdateListingDto extends ListingDetailsDto {
-  @IsUUID()
-  id: string;
+  @IsString()
+  slug: string;
+  @IsIn(Object.values(Platform))
+  platform: Platform;
 }
 
 export class FetchListingQueryDto {
@@ -53,13 +55,17 @@ export class FetchListingQueryDto {
   slug: string;
   @IsIn(Object.values(Platform))
   platform: Platform;
+  @Type(() => Number)
   @IsLongitude()
   long: number;
+  @Type(() => Number)
   @IsLatitude()
   lat: number;
 }
 
 export class DeleteListingDto {
-  @IsUUID()
-  id: string;
+  @IsString()
+  slug: string;
+  @IsIn(Object.values(Platform))
+  platform: Platform;
 }

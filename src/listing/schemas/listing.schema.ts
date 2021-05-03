@@ -1,4 +1,4 @@
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Platform } from '../../game/interface/game.interface';
 import { LocationSchema } from '../../user/schemas/user.schema';
@@ -18,6 +18,15 @@ class RentDetails {
   period: RentingPeriod;
 }
 
+@Schema({
+  toJSON: {
+    transform: (doc, ret) => {
+      delete ret._id;
+      delete ret.__v;
+      return ret;
+    },
+  },
+})
 export class Listing {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy: string;

@@ -1,6 +1,6 @@
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { IRequestGetProfile } from './interfaces/controller.interface';
+import { IRequestWithProfile } from './interfaces/controller.interface';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
@@ -39,7 +39,7 @@ describe('UsersController', () => {
         },
       };
       const userRet = controller.getProfile(
-        (req as unknown) as IRequestGetProfile,
+        (req as unknown) as IRequestWithProfile,
       );
       expect(req.user.toObject).toBeCalled();
       expect(userRet).toEqual(user);

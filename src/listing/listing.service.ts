@@ -6,8 +6,10 @@ import {
   CreateListingDto,
   DeleteListingDto,
   FetchListingQueryDto,
+  ListingDetailsDto,
   UpdateListingDto,
 } from './dto/listing.dto';
+import { ListingType } from './interface/listing.interface';
 import { Listing, ListingDocument } from './schemas/listing.schema';
 
 @Injectable()
@@ -17,6 +19,7 @@ export class ListingService {
   ) {}
 
   async createListing(listingDto: CreateListingDto, user: UserDocument) {
+    this.checkIfValidListing(listingDto);
     const listing: Listing = {
       ...listingDto,
       location: user.location,
@@ -43,14 +46,17 @@ export class ListingService {
       .exec();
   }
 
-  async updateListing(listingDto: UpdateListingDto) {
+  async updateListing(user: UserDocument, listingDto: UpdateListingDto) {
+    this.checkIfValidListing(listingDto);
     const listing = await this.listingModel
-      .findOne({ _id: listingDto.id })
+      .findOne({
+        createdBy: user._id,
+        platform: listingDto.platform,
+        slug: listingDto.slug,
+      })
       .exec();
     if (!listing) {
-      throw new BadRequestException(
-        `No listing exists with id: ${listingDto.id}`,
-      );
+      throw new BadRequestException(`Couldn't find requested listing`);
     }
     delete listing.rentDetails;
     delete listing.saleDetails;
@@ -60,7 +66,23 @@ export class ListingService {
     await listing.save();
   }
 
-  async deleteListing(listingDto: DeleteListingDto) {
-    this.listingModel.deleteOne({ _id: listingDto.id }).exec();
+  async deleteListing(user: UserDocument, listingDto: DeleteListingDto) {
+    this.listingModel
+      .deleteOne({
+        ...listingDto,
+        createdBy: user._id,
+      })
+      .exec();
+  }
+
+  checkIfValidListing(listingDto: ListingDetailsDto) {
+    if (listingDto.listingType.includes(ListingType.SALE)) {
+      if (!listingDto.saleDetails)
+        throw new BadRequestException('Sale details required');
+    }
+    if (listingDto.listingType.includes(ListingType.RENT)) {
+      if (!listingDto.rentDetails)
+        throw new BadRequestException('Rent details required');
+    }
   }
 }

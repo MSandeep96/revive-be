@@ -2,6 +2,7 @@ import * as faker from 'faker';
 import { Platform } from '../../src/game/interface/game.interface';
 import {
   CreateListingDto,
+  DeleteListingDto,
   FetchListingQueryDto,
   UpdateListingDto,
 } from '../../src/listing/dto/listing.dto';
@@ -43,10 +44,18 @@ export class ListingFixture {
   static getFakeUpdateDto = (): UpdateListingDto => {
     const fakeDto = ListingFixture.getFakeListingDto();
     return {
-      id: faker.datatype.uuid(),
+      platform: faker.random.arrayElement(Object.values(Platform)),
+      slug: faker.lorem.slug(),
       listingType: fakeDto.listingType,
       rentDetails: fakeDto.rentDetails,
       saleDetails: fakeDto.saleDetails,
+    };
+  };
+
+  static getFakeDeleteDto = (): DeleteListingDto => {
+    return {
+      slug: faker.lorem.slug(),
+      platform: faker.random.arrayElement(Object.values(Platform)),
     };
   };
 }

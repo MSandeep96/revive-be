@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 export type UserDocument = User & Document;
 
 export class LocationSchema {
-  @Prop({ default: 'point' })
+  @Prop()
   type?: string;
   @Prop()
   coordinates: number[];
