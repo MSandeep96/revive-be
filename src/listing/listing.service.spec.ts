@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { ListingFixture } from '../../test/fixtures/listing.fixture';
 import { UserDocument } from '../user/schemas/user.schema';
 import { DeleteListingDto, UpdateListingDto } from './dto/listing.dto';
+import { ListingType } from './interface/listing.interface';
 import { ListingService } from './listing.service';
 import { Listing, ListingDocument } from './schemas/listing.schema';
 
@@ -47,7 +48,7 @@ describe('ListingService', () => {
       const user = ({
         location: {
           type: 'Point',
-          coordinates: [faker.address.longitude, faker.address.latitude],
+          coordinates: [faker.address.longitude(), faker.address.latitude()],
         },
         _id: faker.datatype.uuid(),
       } as unknown) as UserDocument;
@@ -58,6 +59,25 @@ describe('ListingService', () => {
         location: user.location,
         createdBy: user._id,
       });
+    });
+
+    it('should throw error if invalid listing type', async () => {
+      let fakeListing = ListingFixture.getFakeListingDto();
+      if (!fakeListing.listingType.includes(ListingType.SALE)) {
+        fakeListing.listingType.push(ListingType.SALE);
+      }
+      delete fakeListing.saleDetails;
+      await expect(
+        service.createListing(fakeListing, {} as UserDocument),
+      ).rejects.toBeDefined();
+      fakeListing = ListingFixture.getFakeListingDto();
+      if (!fakeListing.listingType.includes(ListingType.RENT)) {
+        fakeListing.listingType.push(ListingType.RENT);
+      }
+      delete fakeListing.rentDetails;
+      await expect(
+        service.createListing(fakeListing, {} as UserDocument),
+      ).rejects.toBeDefined();
     });
   });
 
@@ -84,6 +104,25 @@ describe('ListingService', () => {
   });
 
   describe('updateListing()', () => {
+    it('should throw error if invalid listing type', async () => {
+      let fakeListing = ListingFixture.getFakeListingDto();
+      if (!fakeListing.listingType.includes(ListingType.SALE)) {
+        fakeListing.listingType.push(ListingType.SALE);
+      }
+      delete fakeListing.saleDetails;
+      await expect(
+        service.createListing(fakeListing, {} as UserDocument),
+      ).rejects.toBeDefined();
+      fakeListing = ListingFixture.getFakeListingDto();
+      if (!fakeListing.listingType.includes(ListingType.RENT)) {
+        fakeListing.listingType.push(ListingType.RENT);
+      }
+      delete fakeListing.rentDetails;
+      await expect(
+        service.createListing(fakeListing, {} as UserDocument),
+      ).rejects.toBeDefined();
+    });
+
     it('should update listing', async () => {
       const updateDto = ListingFixture.getFakeUpdateDto();
       const fakeListing: any = ListingFixture.getFakeListingDto();
@@ -91,12 +130,15 @@ describe('ListingService', () => {
       const spy = jest.spyOn(listingModel, 'findOne').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(fakeListing),
       } as any);
-      const listingDto: UpdateListingDto = {
-        id: faker.datatype.uuid(),
-        ...updateDto,
-      };
-      await service.updateListing(listingDto);
-      expect(spy).toBeCalledWith({ _id: listingDto.id });
+      const user = {
+        _id: faker.datatype.uuid(),
+      } as UserDocument;
+      await service.updateListing(user, updateDto);
+      expect(spy).toBeCalledWith({
+        createdBy: user._id,
+        platform: updateDto.platform,
+        slug: updateDto.slug,
+      });
       expect(fakeListing.listingType).toEqual(updateDto.listingType);
       expect(fakeListing.saleDetails).toEqual(updateDto.saleDetails);
       expect(fakeListing.rentDetails).toEqual(updateDto.rentDetails);
@@ -109,25 +151,26 @@ describe('ListingService', () => {
       const spy = jest.spyOn(listingModel, 'findOne').mockReturnValue({
         exec: jest.fn().mockResolvedValueOnce(null),
       } as any);
-      const listingDto: UpdateListingDto = {
-        id: faker.datatype.uuid(),
-        ...updateDto,
-      };
-      await expect(service.updateListing(listingDto)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-      expect(spy).toBeCalledWith({ _id: listingDto.id });
+      const user = {
+        _id: faker.datatype.uuid(),
+      } as UserDocument;
+      const listingDto: UpdateListingDto = ListingFixture.getFakeUpdateDto();
+      await expect(
+        service.updateListing(user, listingDto),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 
   describe('deleteListing()', () => {
     it('should delete listing', () => {
-      const listingDto: DeleteListingDto = {
-        id: faker.datatype.uuid(),
-      };
-      service.deleteListing(listingDto);
+      const listingDto: DeleteListingDto = ListingFixture.getFakeDeleteDto();
+      const user = {
+        _id: faker.datatype.uuid(),
+      } as UserDocument;
+      service.deleteListing(user, listingDto);
       expect(listingModel.deleteOne).toHaveBeenCalledWith({
-        _id: listingDto.id,
+        ...listingDto,
+        createdBy: user._id,
       });
     });
   });

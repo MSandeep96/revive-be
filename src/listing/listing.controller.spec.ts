@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import * as faker from 'faker';
 import { ListingFixture } from '../../test/fixtures/listing.fixture';
 import { ListingController } from './listing.controller';
 import { ListingService } from './listing.service';
@@ -51,15 +50,25 @@ describe('ListingController', () => {
 
   it('should call updateListing on ListingService', async () => {
     const updateListing = ListingFixture.getFakeUpdateDto();
-    await controller.updateListing(updateListing);
-    expect(listingService.updateListing).toHaveBeenCalledWith(updateListing);
+    const req = {
+      user: jest.fn(),
+    };
+    await controller.updateListing(req, updateListing);
+    expect(listingService.updateListing).toHaveBeenCalledWith(
+      req.user,
+      updateListing,
+    );
   });
 
   it('should call deleteListing on ListingService', async () => {
-    const deleteListing = {
-      id: faker.datatype.uuid(),
+    const deleteListing = ListingFixture.getFakeDeleteDto();
+    const req = {
+      user: jest.fn(),
     };
-    await controller.deleteListing(deleteListing);
-    expect(listingService.deleteListing).toHaveBeenCalledWith(deleteListing);
+    await controller.deleteListing(req, deleteListing);
+    expect(listingService.deleteListing).toHaveBeenCalledWith(
+      req.user,
+      deleteListing,
+    );
   });
 });
