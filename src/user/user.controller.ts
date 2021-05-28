@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/strategy/jwt.strategy';
-import { UserLocationDto } from './dto/user.dto';
+import { PlatformsDto, UserLocationDto, UsernameDto } from './dto/user.dto';
 import { IRequestWithProfile } from './interfaces/controller.interface';
 import { User } from './schemas/user.schema';
 import { UserService } from './user.service';
@@ -22,5 +22,23 @@ export class UserController {
     @Body() location: UserLocationDto,
   ) {
     return await this.userService.addLocation(req.user, location);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('username')
+  async updateUsername(
+    @Req() req: IRequestWithProfile,
+    @Body() usernameDto: UsernameDto,
+  ) {
+    return await this.userService.updateUsername(req.user, usernameDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('platforms')
+  async updatePlatforms(
+    @Req() req: IRequestWithProfile,
+    @Body() platformsDto: PlatformsDto,
+  ) {
+    return await this.userService.updatePlatforms(req.user, platformsDto);
   }
 }

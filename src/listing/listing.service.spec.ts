@@ -97,7 +97,7 @@ describe('ListingService', () => {
           },
         },
       };
-      await service.fetchListings(queryDto);
+      await service.fetchGameListings(queryDto);
       expect(listingModel.find).toBeCalledWith(queryObj);
       expect(listingModel.find().exec).toBeCalled();
     });

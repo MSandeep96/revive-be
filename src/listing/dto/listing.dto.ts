@@ -1,17 +1,25 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsEnum,
   IsIn,
+  IsInt,
   IsLatitude,
   IsLongitude,
   IsNumber,
+  IsOptional,
+  IsPositive,
   IsString,
   Max,
   Min,
   ValidateNested,
 } from 'class-validator';
 import { Platform } from '../../game/interface/game.interface';
-import { ListingType, RentingPeriod } from '../interface/listing.interface';
+import {
+  ListingSort,
+  ListingType,
+  RentingPeriod,
+} from '../interface/listing.interface';
 
 class SaleDetailsDto {
   @IsNumber()
@@ -41,6 +49,8 @@ export class CreateListingDto extends ListingDetailsDto {
   slug: string;
   @IsIn(Object.values(Platform))
   platform: Platform;
+  @IsString()
+  gameName: string;
 }
 
 export class UpdateListingDto extends ListingDetailsDto {
@@ -52,15 +62,44 @@ export class UpdateListingDto extends ListingDetailsDto {
 
 export class FetchListingQueryDto {
   @IsString()
-  slug: string;
-  @IsIn(Object.values(Platform))
-  platform: Platform;
+  @IsIn(Object.values(ListingSort))
+  sort: string;
+
+  @Transform(({ value }) => Number(value))
+  @IsNumber()
+  @IsIn([5, 10, 15, 20])
+  distance: number;
+
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value;
+    return value.split(',');
+  })
+  @IsArray()
+  @IsIn(Object.values(ListingType), {
+    each: true,
+  })
+  listingTypes: ListingType[];
+
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  pageNo: number;
+}
+
+export class FetchGeoListingQueryDto {
   @Type(() => Number)
   @IsLongitude()
   long: number;
   @Type(() => Number)
   @IsLatitude()
   lat: number;
+}
+
+export class FetchGameListingQueryDto extends FetchGeoListingQueryDto {
+  @IsString()
+  slug: string;
+  @IsIn(Object.values(Platform))
+  platform: Platform;
 }
 
 export class DeleteListingDto {

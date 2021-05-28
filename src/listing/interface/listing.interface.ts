@@ -1,11 +1,17 @@
 export enum ListingType {
-  SALE,
-  EXCHANGE,
-  RENT,
+  SALE = 'sale',
+  TRADE = 'trade',
+  RENT = 'rent',
 }
 
 export enum RentingPeriod {
   DAY = 'd',
   WEEK = 'w',
-  YEAR = 'y',
+  MONTH = 'm',
+}
+
+export enum ListingSort {
+  NEAREST = 'nearest',
+  LATEST = 'latest',
+  CHEAPEST = 'cheapest',
 }

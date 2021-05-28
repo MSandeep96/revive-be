@@ -44,8 +44,8 @@ describe('ListingController', () => {
 
   it('should call fetchListings on ListingService', async () => {
     const query = ListingFixture.getFakeQueryDto();
-    await controller.fetchListings(query);
-    expect(listingService.fetchListings).toHaveBeenCalledWith(query);
+    await controller.fetchGameListings(query);
+    expect(listingService.fetchGameListings).toHaveBeenCalledWith(query);
   });
 
   it('should call updateListing on ListingService', async () => {

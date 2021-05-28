@@ -42,6 +42,8 @@ export class Listing {
   saleDetails?: SaleDetails;
   @Prop()
   rentDetails?: RentDetails;
+  @Prop()
+  gameName: string;
 }
 
 export const ListingSchema = SchemaFactory.createForClass(Listing);

@@ -1,5 +1,12 @@
 import { Transform } from 'class-transformer';
-import { ArrayUnique, IsArray, IsIn, Length } from 'class-validator';
+import {
+  ArrayUnique,
+  IsArray,
+  IsIn,
+  IsOptional,
+  IsString,
+  Length,
+} from 'class-validator';
 import { Platform } from '../interface/game.interface';
 
 export class GameSearchQuery {
@@ -16,4 +23,10 @@ export class GameSearchQuery {
     each: true,
   })
   platforms;
+}
+
+export class FetchGameQuery {
+  @IsOptional()
+  @IsString()
+  slug: string;
 }

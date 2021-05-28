@@ -10,9 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/strategy/jwt.strategy';
+import { IRequestWithProfile } from '../user/interfaces/controller.interface';
 import {
   CreateListingDto,
   DeleteListingDto,
+  FetchGameListingQueryDto,
+  FetchGeoListingQueryDto,
   FetchListingQueryDto,
   UpdateListingDto,
 } from './dto/listing.dto';
@@ -29,8 +32,24 @@ export class ListingController {
   }
 
   @Get()
-  async fetchListings(@Query() fetchListingQuery: FetchListingQueryDto) {
-    return await this.listingService.fetchListings(fetchListingQuery);
+  @UseGuards(JwtAuthGuard)
+  async fetchListings(
+    @Req() req: IRequestWithProfile,
+    @Query() fetchListing: FetchListingQueryDto,
+  ) {
+    return await this.listingService.fetchListings(fetchListing, req.user);
+  }
+
+  @Get('game')
+  async fetchGameListings(
+    @Query() fetchGameListingQuery: FetchGameListingQueryDto,
+  ) {
+    return await this.listingService.fetchGameListings(fetchGameListingQuery);
+  }
+
+  @Get('map')
+  async fetchGeo(@Query() fetchGeoListingQuery: FetchGeoListingQueryDto) {
+    return await this.listingService.fetchGeo(fetchGeoListingQuery);
   }
 
   @Post()

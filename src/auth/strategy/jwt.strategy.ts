@@ -30,3 +30,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {}
+
+@Injectable()
+export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
+  canActivate() {
+    return true;
+  }
+}

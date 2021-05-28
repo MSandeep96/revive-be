@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Platform } from '../../game/interface/game.interface';
 
 export type UserDocument = User & Document;
 
@@ -19,6 +20,10 @@ export class User {
   username?: string;
   @Prop()
   location?: LocationSchema;
+  @Prop()
+  isNewUser?: boolean;
+  @Prop()
+  platforms?: Platform[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -3,7 +3,7 @@ import { Platform } from '../../src/game/interface/game.interface';
 import {
   CreateListingDto,
   DeleteListingDto,
-  FetchListingQueryDto,
+  FetchGameListingQueryDto,
   UpdateListingDto,
 } from '../../src/listing/dto/listing.dto';
 import {
@@ -34,7 +34,7 @@ export class ListingFixture {
     };
   };
 
-  static getFakeQueryDto = (): FetchListingQueryDto => ({
+  static getFakeQueryDto = (): FetchGameListingQueryDto => ({
     lat: Number(faker.address.latitude()),
     long: Number(faker.address.longitude()),
     platform: faker.random.arrayElement(Object.values(Platform)),

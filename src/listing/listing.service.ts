@@ -5,12 +5,25 @@ import { UserDocument } from '../user/schemas/user.schema';
 import {
   CreateListingDto,
   DeleteListingDto,
+  FetchGameListingQueryDto,
+  FetchGeoListingQueryDto,
   FetchListingQueryDto,
   ListingDetailsDto,
   UpdateListingDto,
 } from './dto/listing.dto';
-import { ListingType } from './interface/listing.interface';
+import { ListingSort, ListingType } from './interface/listing.interface';
 import { Listing, ListingDocument } from './schemas/listing.schema';
+
+const queryAllListings = (queryDto) => ({
+  $geoNear: {
+    near: {
+      type: 'Point',
+      coordinates: [queryDto.long, queryDto.lat],
+    },
+    maxDistance: 15000,
+    distanceField: 'distance',
+  },
+});
 
 @Injectable()
 export class ListingService {
@@ -28,7 +41,64 @@ export class ListingService {
     return await this.listingModel.create(listing);
   }
 
-  async fetchListings(queryDto: FetchListingQueryDto) {
+  async fetchListings(fetchListing: FetchListingQueryDto, user: UserDocument) {
+    let sort;
+    switch (fetchListing.sort) {
+      case ListingSort.LATEST:
+        sort = { _id: 1 };
+        break;
+      case ListingSort.NEAREST:
+        sort = {
+          location: 1,
+        };
+        break;
+      default:
+        sort = {
+          'rentDetails.price': 1,
+          'saleDetails.price': 1,
+        };
+    }
+    return await this.listingModel
+      .find({
+        location: {
+          $nearSphere: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [
+                user.location.coordinates[0],
+                user.location.coordinates[1],
+              ],
+            },
+            $maxDistance: fetchListing.distance * 1000,
+          },
+        },
+        listingType: { $in: fetchListing.listingTypes },
+        platform: { $in: user.platforms },
+      })
+      .sort(sort)
+      .skip(fetchListing.pageNo ? fetchListing.pageNo * 40 : 0)
+      .limit(40)
+      .exec();
+  }
+
+  async fetchGeo(queryDto: FetchGeoListingQueryDto) {
+    return await this.listingModel
+      .aggregate([
+        queryAllListings(queryDto),
+        {
+          $group: {
+            _id: '$createdBy',
+            location: { $first: '$location' },
+            distance: { $first: '$distance' },
+            games: { $push: '$$ROOT' },
+          },
+        },
+      ])
+      .limit(20)
+      .exec();
+  }
+
+  async fetchGameListings(queryDto: FetchGameListingQueryDto) {
     return await this.listingModel
       .find({
         slug: queryDto.slug,

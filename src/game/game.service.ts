@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { RepoService } from '../repo/repo.service';
+import { FetchGameQuery } from './dto/game.dto';
 import { OnRepoFirstReturnFn, Platform } from './interface/game.interface';
 import { Game, GameDocument } from './schemas/game.schema';
 
@@ -44,5 +45,13 @@ export class GameService {
     } catch (err) {
       this.logger.error(err, 'Error writing games to database');
     }
+  }
+
+  async fetchGame(fetchGameQuery: FetchGameQuery) {
+    const game = await this.gameModel.find({ ...fetchGameQuery }).exec();
+    if (!game) {
+      throw new BadRequestException('No game found');
+    }
+    return game;
   }
 }

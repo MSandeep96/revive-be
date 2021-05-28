@@ -1,7 +1,7 @@
 import { Controller, Get, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';
-import { GameSearchQuery } from './dto/search-query.dto';
+import { FetchGameQuery, GameSearchQuery } from './dto/game.dto';
 import { GameService } from './game.service';
 
 @Controller('game')
@@ -27,5 +27,10 @@ export class GameController {
         res.status(200).send(repoGames);
       },
     );
+  }
+
+  @Get()
+  async fetchGame(@Query() fetchGameQuery: FetchGameQuery) {
+    return await this.gameService.fetchGame(fetchGameQuery);
   }
 }
