@@ -13,6 +13,7 @@ import { Listing, ListingDocument } from './schemas/listing.schema';
 describe('ListingService', () => {
   let service: ListingService;
   let listingModel: Model<ListingDocument>;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [

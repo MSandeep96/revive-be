@@ -42,6 +42,7 @@ export class ListingService {
   }
 
   async fetchListings(fetchListing: FetchListingQueryDto, user: UserDocument) {
+    const pageLength = fetchListing.pageLength ?? 40;
     let sort;
     switch (fetchListing.sort) {
       case ListingSort.LATEST:
@@ -76,8 +77,8 @@ export class ListingService {
         platform: { $in: user.platforms },
       })
       .sort(sort)
-      .skip(fetchListing.pageNo ? fetchListing.pageNo * 40 : 0)
-      .limit(40)
+      .skip(fetchListing.pageNo ? (fetchListing.pageNo - 1) * pageLength : 0)
+      .limit(pageLength)
       .exec();
   }
 

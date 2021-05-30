@@ -80,10 +80,18 @@ export class FetchListingQueryDto {
   })
   listingTypes: ListingType[];
 
+  @Transform(({ value }) => Number(value))
   @IsOptional()
   @IsInt()
   @IsPositive()
   pageNo: number;
+
+  @Transform(({ value }) => Number(value))
+  @IsOptional()
+  @IsInt()
+  @IsPositive()
+  @Max(40)
+  pageLength: number;
 }
 
 export class FetchGeoListingQueryDto {
