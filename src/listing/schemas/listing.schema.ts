@@ -18,15 +18,7 @@ class RentDetails {
   period: RentingPeriod;
 }
 
-@Schema({
-  toJSON: {
-    transform: (doc, ret) => {
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
-  },
-})
+@Schema()
 export class Listing {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy: string;

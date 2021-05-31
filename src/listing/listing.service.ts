@@ -43,43 +43,100 @@ export class ListingService {
 
   async fetchListings(fetchListing: FetchListingQueryDto, user: UserDocument) {
     const pageLength = fetchListing.pageLength ?? 40;
+<<<<<<< HEAD
     let sort;
+=======
+    let sort = {};
+>>>>>>> pagination
     switch (fetchListing.sort) {
       case ListingSort.LATEST:
         sort = { _id: 1 };
         break;
       case ListingSort.NEAREST:
         sort = {
-          location: 1,
+          distance: 1,
+          _id: 1,
         };
         break;
       default:
-        sort = {
-          'rentDetails.price': 1,
-          'saleDetails.price': 1,
-        };
+        if (fetchListing.listingTypes.includes(ListingType.RENT))
+          sort = { 'rentDetails.price': 1, ...sort };
+        if (fetchListing.listingTypes.includes(ListingType.SALE))
+          sort = {
+            'saleDetails.price': 1,
+            ...sort,
+          };
+        sort = { ...sort, _id: 1 };
     }
-    return await this.listingModel
-      .find({
-        location: {
-          $nearSphere: {
-            $geometry: {
+    const skip = fetchListing.pageNo
+      ? (fetchListing.pageNo - 1) * pageLength
+      : 0;
+    const limit = pageLength;
+    const results = await this.listingModel
+      .aggregate([
+        {
+          $geoNear: {
+            near: {
               type: 'Point',
               coordinates: [
                 user.location.coordinates[0],
                 user.location.coordinates[1],
               ],
             },
-            $maxDistance: fetchListing.distance * 1000,
+            maxDistance: fetchListing.distance * 1000,
+            distanceField: 'distance',
           },
         },
-        listingType: { $in: fetchListing.listingTypes },
-        platform: { $in: user.platforms },
-      })
-      .sort(sort)
-      .skip(fetchListing.pageNo ? (fetchListing.pageNo - 1) * pageLength : 0)
-      .limit(pageLength)
+        {
+          $match: {
+            listingType: { $in: fetchListing.listingTypes },
+            platform: { $in: user.platforms },
+          },
+        },
+        { $sort: sort },
+        {
+          $group: {
+            _id: null,
+            count: { $sum: 1 },
+            results: { $push: '$$ROOT' },
+          },
+        },
+        {
+          $project: {
+            pageCount: { $ceil: { $divide: ['$count', pageLength] } },
+            results: { $slice: ['$results', skip, limit] },
+          },
+        },
+      ])
       .exec();
+    if (Array.isArray(results) && results.length === 0) {
+      return {
+        pageCount: 0,
+        results: [],
+      };
+    }
+    return results[0];
+    // return await this.listingModel
+    //   .find({
+    //     location: {
+    //       $nearSphere: {
+    //         $geometry: {
+    //           type: 'Point',
+    //           coordinates: [
+    //             user.location.coordinates[0],
+    //             user.location.coordinates[1],
+    //           ],
+    //         },
+    //         $maxDistance: fetchListing.distance * 1000,
+    //       },
+    //     },
+    //     listingType: { $in: fetchListing.listingTypes },
+    //     platform: { $in: user.platforms },
+    //   })
+    //   .sort(sort)
+    //   .skip(fetchListing.pageNo ? (fetchListing.pageNo - 1) * pageLength : 0)
+    //   .limit(pageLength)
+    //   .exec();
   }
 
   async fetchGeo(queryDto: FetchGeoListingQueryDto) {
