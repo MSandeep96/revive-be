@@ -1,7 +1,7 @@
 import * as faker from 'faker';
 import { Platform } from '../../src/game/interface/game.interface';
 import {
-  CreateListingDto,
+  UpsertListingDto,
   DeleteListingDto,
   FetchGameListingQueryDto,
   UpdateListingDto,
@@ -12,8 +12,8 @@ import {
 } from '../../src/listing/interface/listing.interface';
 
 export class ListingFixture {
-  static getFakeListingDto = (): CreateListingDto => {
-    const fakeData = {} as CreateListingDto;
+  static getFakeListingDto = (): UpsertListingDto => {
+    const fakeData = {} as UpsertListingDto;
     const listingType = faker.random.arrayElements([0, 1, 2]);
     if (listingType.includes(ListingType.SALE)) {
       fakeData.saleDetails = {

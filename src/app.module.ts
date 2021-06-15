@@ -8,6 +8,7 @@ import { configValidationSchema } from './config';
 import { GameModule } from './game/game.module';
 import { ListingModule } from './listing/listing.module';
 import { UserModule } from './user/user.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 const envFilePath = () => {
   switch (process.env.NODE_ENV) {
@@ -58,6 +59,7 @@ const loggerConfig = () => {
     }),
     GameModule,
     ListingModule,
+    WishlistModule,
   ],
   controllers: [AppController],
 })

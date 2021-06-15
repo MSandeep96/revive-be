@@ -17,13 +17,15 @@ export class User {
   @Prop()
   email?: string;
   @Prop()
-  username?: string;
+  username: string;
   @Prop()
   location?: LocationSchema;
   @Prop()
   isNewUser?: boolean;
   @Prop()
   platforms?: Platform[];
+  @Prop()
+  wishlist: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Put, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/strategy/jwt.strategy';
+import { ToggleWishlistDto } from '../wishlist/dto/wishlist.dto';
+import { WishlistService } from '../wishlist/wishlist.service';
 import { PlatformsDto, UserLocationDto, UsernameDto } from './dto/user.dto';
 import { IRequestWithProfile } from './interfaces/controller.interface';
 import { User } from './schemas/user.schema';
@@ -7,7 +9,10 @@ import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private wishlistService: WishlistService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -40,5 +45,14 @@ export class UserController {
     @Body() platformsDto: PlatformsDto,
   ) {
     return await this.userService.updatePlatforms(req.user, platformsDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('wishlist')
+  async toggleWishlist(
+    @Req() req: IRequestWithProfile,
+    @Body() wishlistDto: ToggleWishlistDto,
+  ) {
+    return await this.wishlistService.toggleWishlist(req.user, wishlistDto);
   }
 }
