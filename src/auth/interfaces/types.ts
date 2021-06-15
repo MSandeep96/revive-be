@@ -7,6 +7,7 @@ export type AccessTokens = {
 
 export type JwtContent = {
   user_id: string;
+  is_refresh: boolean;
 };
 
 export interface IApiGoogleLoginResponse extends User, AccessTokens {}

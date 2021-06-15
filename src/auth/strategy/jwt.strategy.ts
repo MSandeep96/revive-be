@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { AuthGuard, PassportStrategy } from '@nestjs/passport';
@@ -8,6 +12,7 @@ import { User, UserDocument } from '../../user/schemas/user.schema';
 
 interface JwtContent {
   user_id: string;
+  is_refresh: boolean;
 }
 
 @Injectable()
@@ -24,6 +29,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtContent) {
+    if (payload.is_refresh) {
+      throw new UnauthorizedException();
+    }
     return await this.userModel.findById(payload.user_id).exec();
   }
 }
@@ -33,7 +41,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {}
 
 @Injectable()
 export class OptionalJwtAuthGuard extends AuthGuard('jwt') {
-  canActivate() {
+  async canActivate(context: ExecutionContext) {
+    await super.canActivate(context);
     return true;
   }
 }
