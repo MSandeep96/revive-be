@@ -3,8 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { RepoService } from '../repo/repo.service';
+import { UserDocument } from '../user/schemas/user.schema';
+import { WishlistService } from '../wishlist/wishlist.service';
 import { FetchGameQuery } from './dto/game.dto';
-import { OnRepoFirstReturnFn, Platform } from './interface/game.interface';
+import {
+  GameWithWishlist,
+  OnRepoFirstReturnFn,
+  Platform,
+} from './interface/game.interface';
 import { Game, GameDocument } from './schemas/game.schema';
 
 @Injectable()
@@ -12,6 +18,7 @@ export class GameService {
   constructor(
     @InjectModel(Game.name) private gameModel: Model<GameDocument>,
     private repoService: RepoService,
+    private wishlistService: WishlistService,
     @InjectPinoLogger(GameService.name) private logger: PinoLogger,
   ) {
     repoService.init();
@@ -33,6 +40,10 @@ export class GameService {
       platforms,
       onRepoFirstReturnFn,
     );
+    if (games.length === 0) {
+      onRepoFirstReturnFn([], 'No results');
+      return;
+    }
     const upsertGames = games.map((game) => {
       return this.gameModel
         .updateOne({ slug: game.slug, platform: game.platform }, game, {
@@ -47,11 +58,18 @@ export class GameService {
     }
   }
 
-  async fetchGame(fetchGameQuery: FetchGameQuery) {
-    const game = await this.gameModel.find({ ...fetchGameQuery }).exec();
+  async fetchGame(user: UserDocument, fetchGameQuery: FetchGameQuery) {
+    const game = await this.gameModel.findOne({ ...fetchGameQuery }).exec();
     if (!game) {
       throw new BadRequestException('No game found');
     }
-    return game;
+    const gameRes = game.toObject() as GameWithWishlist;
+    if (user) {
+      gameRes.wishlist = await this.wishlistService.getWishlistStatus(
+        user,
+        fetchGameQuery,
+      );
+    }
+    return gameRes;
   }
 }

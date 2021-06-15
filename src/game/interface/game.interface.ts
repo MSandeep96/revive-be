@@ -7,4 +7,8 @@ export enum Platform {
   PS5 = 'ps5',
 }
 
+export type GameWithWishlist = Game & {
+  wishlist: boolean;
+};
+
 export type OnRepoFirstReturnFn = (repoGames: Game[], name: string) => void;
