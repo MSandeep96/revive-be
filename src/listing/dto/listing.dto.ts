@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsEnum,
   IsIn,
@@ -44,16 +45,7 @@ export class ListingDetailsDto {
   rentDetails?: RentDetailsDto;
 }
 
-export class CreateListingDto extends ListingDetailsDto {
-  @IsString()
-  slug: string;
-  @IsIn(Object.values(Platform))
-  platform: Platform;
-  @IsString()
-  gameName: string;
-}
-
-export class UpdateListingDto extends ListingDetailsDto {
+export class UpsertListingDto extends ListingDetailsDto {
   @IsString()
   slug: string;
   @IsIn(Object.values(Platform))
@@ -75,10 +67,19 @@ export class FetchListingQueryDto {
     return value.split(',');
   })
   @IsArray()
+  @ArrayMinSize(1)
   @IsIn(Object.values(ListingType), {
     each: true,
   })
   listingTypes: ListingType[];
+
+  @IsString()
+  @IsOptional()
+  slug: string;
+
+  @IsIn(Object.values(Platform))
+  @IsOptional()
+  platform: Platform;
 
   @Transform(({ value }) => Number(value))
   @IsOptional()
@@ -97,7 +98,7 @@ export class FetchListingQueryDto {
 export class FetchGeoListingQueryDto {
   @Type(() => Number)
   @IsLongitude()
-  long: number;
+  lng: number;
   @Type(() => Number)
   @IsLatitude()
   lat: number;
@@ -114,5 +115,14 @@ export class DeleteListingDto {
   @IsString()
   slug: string;
   @IsIn(Object.values(Platform))
+  platform: Platform;
+}
+
+export class FetchUserListingQueryDto {
+  @IsString()
+  @IsOptional()
+  slug: string;
+  @IsIn(Object.values(Platform))
+  @IsOptional()
   platform: Platform;
 }

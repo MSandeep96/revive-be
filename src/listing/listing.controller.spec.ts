@@ -53,8 +53,8 @@ describe('ListingController', () => {
     const req = {
       user: jest.fn(),
     };
-    await controller.updateListing(req, updateListing);
-    expect(listingService.updateListing).toHaveBeenCalledWith(
+    await controller.upsertListing(req, updateListing);
+    expect(listingService.upsertListing).toHaveBeenCalledWith(
       req.user,
       updateListing,
     );

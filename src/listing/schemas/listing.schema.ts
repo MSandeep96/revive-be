@@ -36,6 +36,10 @@ export class Listing {
   rentDetails?: RentDetails;
   @Prop()
   gameName: string;
+  @Prop({ type: Date })
+  createdAt: Date;
+  @Prop()
+  artwork: string;
 }
 
 export const ListingSchema = SchemaFactory.createForClass(Listing);

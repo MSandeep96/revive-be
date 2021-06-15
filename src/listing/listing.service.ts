@@ -1,15 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Game, GameDocument } from '../game/schemas/game.schema';
 import { UserDocument } from '../user/schemas/user.schema';
 import {
-  CreateListingDto,
   DeleteListingDto,
   FetchGameListingQueryDto,
   FetchGeoListingQueryDto,
   FetchListingQueryDto,
+  FetchUserListingQueryDto,
   ListingDetailsDto,
-  UpdateListingDto,
+  UpsertListingDto,
 } from './dto/listing.dto';
 import { ListingSort, ListingType } from './interface/listing.interface';
 import { Listing, ListingDocument } from './schemas/listing.schema';
@@ -18,7 +19,7 @@ const queryAllListings = (queryDto) => ({
   $geoNear: {
     near: {
       type: 'Point',
-      coordinates: [queryDto.long, queryDto.lat],
+      coordinates: [queryDto.lng, queryDto.lat],
     },
     maxDistance: 15000,
     distanceField: 'distance',
@@ -29,28 +30,73 @@ const queryAllListings = (queryDto) => ({
 export class ListingService {
   constructor(
     @InjectModel(Listing.name) private listingModel: Model<ListingDocument>,
+    @InjectModel(Game.name) private gameModel: Model<GameDocument>,
   ) {}
 
-  async createListing(listingDto: CreateListingDto, user: UserDocument) {
+  async upsertListing(user: UserDocument, listingDto: UpsertListingDto) {
     this.checkIfValidListing(listingDto);
-    const listing: Listing = {
-      ...listingDto,
-      location: user.location,
-      createdBy: user._id,
-    };
-    return await this.listingModel.create(listing);
+    const listing = await this.listingModel
+      .findOne({
+        createdBy: user._id,
+        platform: listingDto.platform,
+        slug: listingDto.slug,
+      })
+      .exec();
+    if (!listing) {
+      const game = await this.gameModel
+        .findOne({ slug: listingDto.slug })
+        .exec();
+      const newListing: Listing = {
+        ...listingDto,
+        location: user.location,
+        createdBy: user._id,
+        createdAt: new Date(),
+        gameName: game.name,
+        artwork: game.artwork,
+      };
+      return await this.listingModel.create(newListing);
+    }
+    delete listing.rentDetails;
+    delete listing.saleDetails;
+    listing.listingType = listingDto.listingType;
+    listing.saleDetails = listingDto.saleDetails;
+    listing.rentDetails = listingDto.rentDetails;
+    await listing.save();
   }
 
-  async fetchListings(fetchListing: FetchListingQueryDto, user: UserDocument) {
-    const pageLength = fetchListing.pageLength ?? 40;
-<<<<<<< HEAD
-    let sort;
-=======
+  async fetchUserListing(
+    fetchUserListing: FetchUserListingQueryDto,
+    user: UserDocument,
+  ): Promise<Listing> {
+    const queryObj = {
+      createdBy: user._id,
+    };
+    const listing = await this.listingModel
+      .findOne({
+        ...queryObj,
+        slug: fetchUserListing.slug,
+        platform: fetchUserListing.platform,
+      })
+      .exec();
+    if (listing) {
+      return listing;
+    }
+    return {} as Listing;
+  }
+
+  async fetchAllUserListings(user: UserDocument) {
+    return await this.listingModel
+      .find({
+        createdBy: user._id,
+      })
+      .exec();
+  }
+
+  getSortObject(fetchListing: FetchListingQueryDto) {
     let sort = {};
->>>>>>> pagination
     switch (fetchListing.sort) {
       case ListingSort.LATEST:
-        sort = { _id: 1 };
+        sort = { _id: -1 };
         break;
       case ListingSort.NEAREST:
         sort = {
@@ -68,6 +114,26 @@ export class ListingService {
           };
         sort = { ...sort, _id: 1 };
     }
+    return sort;
+  }
+
+  getMatchObject(fetchListing: FetchListingQueryDto, user: UserDocument) {
+    const match: any = {
+      listingType: { $in: fetchListing.listingTypes },
+      platform: { $in: user.platforms },
+      createdBy: { $ne: user._id },
+    };
+    if (fetchListing.slug) {
+      match.slug = fetchListing.slug;
+    }
+    if (fetchListing.platform) {
+      match.platform = fetchListing.platform;
+    }
+    return match;
+  }
+
+  async fetchListings(fetchListing: FetchListingQueryDto, user: UserDocument) {
+    const pageLength = fetchListing.pageLength ?? 40;
     const skip = fetchListing.pageNo
       ? (fetchListing.pageNo - 1) * pageLength
       : 0;
@@ -88,12 +154,9 @@ export class ListingService {
           },
         },
         {
-          $match: {
-            listingType: { $in: fetchListing.listingTypes },
-            platform: { $in: user.platforms },
-          },
+          $match: this.getMatchObject(fetchListing, user),
         },
-        { $sort: sort },
+        { $sort: this.getSortObject(fetchListing) },
         {
           $group: {
             _id: null,
@@ -116,27 +179,6 @@ export class ListingService {
       };
     }
     return results[0];
-    // return await this.listingModel
-    //   .find({
-    //     location: {
-    //       $nearSphere: {
-    //         $geometry: {
-    //           type: 'Point',
-    //           coordinates: [
-    //             user.location.coordinates[0],
-    //             user.location.coordinates[1],
-    //           ],
-    //         },
-    //         $maxDistance: fetchListing.distance * 1000,
-    //       },
-    //     },
-    //     listingType: { $in: fetchListing.listingTypes },
-    //     platform: { $in: user.platforms },
-    //   })
-    //   .sort(sort)
-    //   .skip(fetchListing.pageNo ? (fetchListing.pageNo - 1) * pageLength : 0)
-    //   .limit(pageLength)
-    //   .exec();
   }
 
   async fetchGeo(queryDto: FetchGeoListingQueryDto) {
@@ -165,33 +207,13 @@ export class ListingService {
           $nearSphere: {
             $geometry: {
               type: 'Point',
-              coordinates: [queryDto.long, queryDto.lat],
+              coordinates: [queryDto.lng, queryDto.lat],
             },
             $maxDistance: 15000,
           },
         },
       })
       .exec();
-  }
-
-  async updateListing(user: UserDocument, listingDto: UpdateListingDto) {
-    this.checkIfValidListing(listingDto);
-    const listing = await this.listingModel
-      .findOne({
-        createdBy: user._id,
-        platform: listingDto.platform,
-        slug: listingDto.slug,
-      })
-      .exec();
-    if (!listing) {
-      throw new BadRequestException(`Couldn't find requested listing`);
-    }
-    delete listing.rentDetails;
-    delete listing.saleDetails;
-    listing.listingType = listingDto.listingType;
-    listing.saleDetails = listingDto.saleDetails;
-    listing.rentDetails = listingDto.rentDetails;
-    await listing.save();
   }
 
   async deleteListing(user: UserDocument, listingDto: DeleteListingDto) {

@@ -134,7 +134,7 @@ describe('ListingService', () => {
       const user = {
         _id: faker.datatype.uuid(),
       } as UserDocument;
-      await service.updateListing(user, updateDto);
+      await service.upsertListing(user, updateDto);
       expect(spy).toBeCalledWith({
         createdBy: user._id,
         platform: updateDto.platform,
@@ -157,7 +157,7 @@ describe('ListingService', () => {
       } as UserDocument;
       const listingDto: UpdateListingDto = ListingFixture.getFakeUpdateDto();
       await expect(
-        service.updateListing(user, listingDto),
+        service.upsertListing(user, listingDto),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
   });

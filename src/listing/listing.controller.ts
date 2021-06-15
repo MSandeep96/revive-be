@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Post,
   Put,
   Query,
   Req,
@@ -12,24 +11,18 @@ import {
 import { JwtAuthGuard } from '../auth/strategy/jwt.strategy';
 import { IRequestWithProfile } from '../user/interfaces/controller.interface';
 import {
-  CreateListingDto,
   DeleteListingDto,
   FetchGameListingQueryDto,
   FetchGeoListingQueryDto,
   FetchListingQueryDto,
-  UpdateListingDto,
+  FetchUserListingQueryDto,
+  UpsertListingDto,
 } from './dto/listing.dto';
 import { ListingService } from './listing.service';
 
 @Controller('listing')
 export class ListingController {
   constructor(private listingService: ListingService) {}
-
-  @Put()
-  @UseGuards(JwtAuthGuard)
-  async create(@Req() req, @Body() listingDto: CreateListingDto) {
-    return await this.listingService.createListing(listingDto, req.user);
-  }
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -38,6 +31,21 @@ export class ListingController {
     @Query() fetchListing: FetchListingQueryDto,
   ) {
     return await this.listingService.fetchListings(fetchListing, req.user);
+  }
+
+  @Get('user')
+  @UseGuards(JwtAuthGuard)
+  async fetchUserListings(
+    @Req() req: IRequestWithProfile,
+    @Query() fetchUserListing: FetchUserListingQueryDto,
+  ) {
+    if (fetchUserListing.slug && fetchUserListing.platform) {
+      return await this.listingService.fetchUserListing(
+        fetchUserListing,
+        req.user,
+      );
+    }
+    return await this.listingService.fetchAllUserListings(req.user);
   }
 
   @Get('game')
@@ -52,11 +60,10 @@ export class ListingController {
     return await this.listingService.fetchGeo(fetchGeoListingQuery);
   }
 
-  @Post()
+  @Put()
   @UseGuards(JwtAuthGuard)
-  async updateListing(@Req() req, @Body() updateListingDto: UpdateListingDto) {
-    await this.listingService.updateListing(req.user, updateListingDto);
-    return;
+  async upsertListing(@Req() req, @Body() upsertListingDto: UpsertListingDto) {
+    await this.listingService.upsertListing(req.user, upsertListingDto);
   }
 
   @Delete()
